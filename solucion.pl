@@ -55,17 +55,17 @@ tiene(lala, 5).
 cantidadColeccionistas(7).
 % Para el predicado: mitadPersonas(Figurita):-
 
-% =========== Paquetes abiertos: abrio(Persona, N°Paquete, [Figuritas]). ===========
+% =========== Paquetes abiertos: paquete(Persona, N°Paquete, [Figuritas]). ===========
 
-abrio(andy, 1, [2,4]).
-abrio(andy, 2, [7,6]).
-abrio(andy, 3, [8,1,3,5]).
-abrio(flor, 1, [5]).
-abrio(flor, 2, [5]).
-abrio(bobby, 1, [3,5]).
-abrio(bobby, 2, [7]).
-abrio(lala, 1, [3,7,1]).
-abrio(toto, 1, [1]).
+paquete(andy, 1, [2,4]).
+paquete(andy, 2, [7,6]).
+paquete(andy, 3, [8,1,3,5]).
+paquete(flor, 1, [5]).
+paquete(flor, 2, [5]).
+paquete(bobby, 1, [3,5]).
+paquete(bobby, 2, [7]).
+paquete(lala, 1, [3,7,1]).
+paquete(toto, 1, [1]).
 
 % =========== Figuritas canjeadas: canje(Persona1, Persona2, Recibe1, Recibe2). ===========
 
@@ -94,7 +94,7 @@ repetida(Persona, Figurita):-
     Veces > 1.
 
 obtuvoFigurita(Persona, Figurita):-
-    abrio(Persona, _, Lista),
+    paquete(Persona, _, Lista),
     member(Figurita, Lista).
 
 obtuvoFigurita(Persona, Figurita):- canje(Persona, _, [Figurita], _).
@@ -116,7 +116,7 @@ esRara(Figurita):-
     not(repetida(_, Figurita)).
     
 obtuvoEnPrimerosDosPaquetes(Figurita):-
-    abrio(_, Paquete, Lista),
+    paquete(_, Paquete, Lista),
     Paquete < 3,
     member(Figurita, Lista).
 

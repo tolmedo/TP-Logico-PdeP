@@ -2,7 +2,7 @@
 
 % =========== Figuritas que existen: figurita(Numero, Imagen). ===========
 % =========== imagen(Tipo, Personajes) ===========
-% Posiblemente después haya que cambiarlo a que las figurtias sean numero e imagen. Y que luego la imagen tenga las divisiones de tipo y personajes
+
 figurita(1, {basica, [kitty, keroppi]}). % Nivel = 8
 figurita(2, {brillante, [kitty]}). % Nivel = 5*5 = 25
 figurita(3, {brillante, [myMelody]}). % Nivel = 5*3 = 15
@@ -21,12 +21,12 @@ esRompecabezas(rompecabezas3). % Por las dudas
 
 % =========== Figuritas que actualmente tiene cada persona: tiene(Persona, Figus). ===========
 
-tiene(andy, [1, 2, 3, 4, 5, 6, 7, 8]).             
-tiene(flor, [2, 4, 5, 7]).  
-tiene(bobby, [1, 3, 4, 5, 6, 7]).     
-tiene(pablito, [1, 2, 6]). 
-tiene(toto, [1, 6]).     
-tiene(lala, [1, 3, 5, 7]). 
+tiene(andy, [1,2,3,4,5,6,7,8]).             
+tiene(flor, [2,4,5,7]).  
+tiene(bobby, [1,3,4,5,6,7]).     
+tiene(pablito, [1,2,6]). 
+tiene(toto, [1,6]).     
+tiene(lala, [1,3,5,7]). 
 
 % Juanchi no tiene ninguna figurita
 % La figurita 9 no la tiene nadie
@@ -50,8 +50,10 @@ paquete(toto, 1, [1]).
 
 canje(flor, andy, [4,7], [1]).
 canje(flor, bobby, [2], [1,4,6]).
+canje(flor, bobby, [3], [5]).
 canje(pablito, lala, [1], [5]).
 canje(pablito, toto, [2], [6]).
+canje(flor, pablito, [6], [2]). 
 
 % =========== Popularidad de los personajes: popularidad(Personaje, Popularidad). ===========
 
@@ -167,14 +169,28 @@ plusRara(_,0).
 
 % =========== Análisis elemental (Tomás) ===========
 
+esValidoElCanje(Persona1, Persona2, Recibe1, Recibe2):-
+    canje(Persona1, Persona2, Recibe1, Recibe2),
+    validarFiguritas(Persona1, Recibe2),
+    validarFiguritas(Persona2, Recibe2).
+    
+validarFiguritas(Persona, Figus):-
+    tiene(Persona, FigusQueTiene),
+    forall(member(FiguritaABuscar, Figus), member(FiguritaABuscar, FigusQueTiene)).
 
-% =========== Hace negocio (Thiago) ===========
+esValidoElPaquete(Figus):-
+    forall(member(FiguritaABuscar, Figus), figurita(FiguritaABuscar, _)).
 
-haceNegocio(Persona1,Persona2):-
-    canje(Persona1,Persona2,Recibe1,Recibe2),
-    member(R1,Recibe1),
+% =========== Hace negocio (Verificamos que la Persona1 haga negocio con la Persona2) (Thiago) ===========
+
+haceNegocio(Persona1, Persona2):-
+    verificarCanje(Persona1, Persona2, Recibe1, Recibe2),
+    member(R1, Recibe1), 
     esValiosa(R1),
-    forall(member(R2,Recibe2),not(esValiosa(R2))).
+    forall(member(R2, Recibe2), not(esValiosa(R2))).
+
+verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona1, Persona2, Recibe1, Recibe2).
+verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona2, Persona1, Recibe2, Recibe1).
 
 % =========== Necesita con urgencia (Maxi) ===========
 

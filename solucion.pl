@@ -19,35 +19,14 @@ esRompecabezas(rompecabezas1).
 esRompecabezas(rompecabezas2). % Por las dudas
 esRompecabezas(rompecabezas3). % Por las dudas
 
-% =========== Figuritas que actualmente tiene cada persona: tiene(Persona, Figurita). ===========
+% =========== Figuritas que actualmente tiene cada persona: tiene(Persona, Figus). ===========
 
-tiene(andy, 2). 
-tiene(andy, 4). 
-tiene(andy, 6). 
-tiene(andy, 7).    
-tiene(andy, 8).    
-tiene(andy, 1).    
-tiene(andy, 3).    
-tiene(andy, 5).    
-tiene(flor, 5). 
-tiene(flor, 4). 
-tiene(flor, 7). 
-tiene(flor, 2). 
-tiene(bobby, 1). 
-tiene(bobby, 4). 
-tiene(bobby, 6).
-tiene(bobby, 3).    
-tiene(bobby, 5).    
-tiene(bobby, 7).    
-tiene(pablito, 1). 
-tiene(pablito, 2). 
-tiene(pablito, 6).
-tiene(toto, 1).    
-tiene(toto, 6). 
-tiene(lala, 3). 
-tiene(lala, 7). 
-tiene(lala, 1). 
-tiene(lala, 5). 
+tiene(andy, [1, 2, 3, 4, 5, 6, 7, 8]).             
+tiene(flor, [2, 4, 5, 7]).  
+tiene(bobby, [1, 3, 4, 5, 6, 7]).     
+tiene(pablito, [1, 2, 6]). 
+tiene(toto, [1, 6]).     
+tiene(lala, [1, 3, 5, 7]). 
 
 % Juanchi no tiene ninguna figurita
 % La figurita 9 no la tiene nadie
@@ -89,13 +68,14 @@ popularidad(kuromi, 5).
 % =========== Saber si una persona tiene un figurita repetida ===========
 
 repetida(Persona, Figurita):-
-    tiene(Persona, Figurita),
+    tiene(Persona, Figus),
+    member(Figurita, Figus),
     vecesObtenidas(Persona, Figurita, Veces),
     Veces > 1.
 
 obtuvoFigurita(Persona, Figurita):-
-    paquete(Persona, _, Lista),
-    member(Figurita, Lista).
+    paquete(Persona, _, FigusPaquete),
+    member(Figurita, FigusPaquete).
 
 obtuvoFigurita(Persona, Figurita):- canje(Persona, _, [Figurita], _).
 obtuvoFigurita(Persona, Figurita):- canje(_, Persona, _ , [Figurita]).
@@ -116,12 +96,12 @@ esRara(Figurita):-
     not(repetida(_, Figurita)).
     
 obtuvoEnPrimerosDosPaquetes(Figurita):-
-    paquete(_, Paquete, Lista),
+    paquete(_, Paquete, FigusPaquete),
     Paquete < 3,
-    member(Figurita, Lista).
+    member(Figurita, FigusPaquete).
 
 mitadPersonas(Figurita):-
-    findall(Persona, tiene(Persona, Figurita), ListaPersonas),
+    findall(Persona, (tiene(Persona, Figus), member(Figurita, Figus)), ListaPersonas),
     length(ListaPersonas, CantidadPersonas),
     cantidadColeccionistas(Coleccionistas),
     Mitad is Coleccionistas / 2,
@@ -159,10 +139,11 @@ valorPiezas(CantPiezas, 2):- CantPiezas =< 2.
 % =========== Imagen más atractiva ===========
 
 laMasAtractiva(Persona, Imagen):-
+    tiene(Persona, Figus),
+    member(Figurita, Figus),
     figurita(Figurita, Imagen),
-    tiene(Persona, Figurita),
     nivelDeAtractivo(Figurita, Nivel),
-    forall((tiene(Persona, OtraFigurita), nivelDeAtractivo(OtraFigurita, OtroNivel)), Nivel >= OtroNivel).
+    forall(((tiene(Persona, OtrasFigus), member(OtraFigurita, OtrasFigus)), nivelDeAtractivo(OtraFigurita, OtroNivel)), Nivel >= OtroNivel).
 
 % =========== Nivel de interés ===========
 
@@ -172,10 +153,12 @@ nivelDeInteresTotal(Persona, Figuritas, InteresTotal):-
     plusRara(Figuritas, Agregado),
     InteresTotal is InteresParcial + Agregado.
     
-interesParcial(Persona, Figurita, 0) :- tiene(Persona, Figurita).
+interesParcial(Persona, Figurita, 0) :-
+    tiene(Persona, Figus),
+    member(Figurita, Figus).
 interesParcial(Persona, Figurita, Interes) :- 
     nivelDeAtractivo(Figurita, Interes),
-    not(tiene(Persona, Figurita)).
+    not((tiene(Persona, Figus), member(Figurita, Figus))).
 
 plusRara(Figuritas, 20) :-
     member(F, Figuritas),
@@ -183,6 +166,7 @@ plusRara(Figuritas, 20) :-
 plusRara(_,0).
 
 % =========== Análisis elemental (Tomás) ===========
+
 
 % =========== Hace negocio (Thiago) ===========
 

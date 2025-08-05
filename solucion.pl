@@ -184,10 +184,10 @@ esValidoElPaquete(Figus):-
 % =========== Hace negocio (Verificamos que la Persona1 haga negocio con la Persona2) (Thiago) ===========
 
 haceNegocio(Persona1, Persona2):-
-    verificarCanje(Persona1, Persona2, Recibe1, Recibe2),
-    member(R1, Recibe1), 
-    esValiosa(R1),
-    forall(member(R2, Recibe2), not(esValiosa(R2))).
+    verificarCanje(Persona1, Persona2, Recibe, Entrega),
+    member(R, Recibe), 
+    esValiosa(R),
+    forall(member(E, Entrega), not(esValiosa(E))).
 
 verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona1, Persona2, Recibe1, Recibe2).
 verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona2, Persona1, Recibe2, Recibe1).

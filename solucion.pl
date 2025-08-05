@@ -170,6 +170,12 @@ plusRara(_,0).
 
 % =========== Hace negocio (Thiago) ===========
 
+haceNegocio(Persona1,Persona2):-
+    canje(Persona1,Persona2,Recibe1,Recibe2),
+    member(R1,Recibe1),
+    esValiosa(R1),
+    forall(member(R2,Recibe2),not(esValiosa(R2))).
+
 % =========== Necesita con urgencia (Maxi) ===========
 
 % =========== Es una amenaza (Mateo) ===========

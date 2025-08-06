@@ -200,47 +200,73 @@ necesitaConUrgencia(Persona, Figurita) :-
     not(member(Figurita,Figus)), %forall(member(FiguritaQueTiene,Figus), FiguritaQueTiene \= Figurita),
     completa(Figus, Figurita).
 
+% Caso de que sea una pieza del rompecabezas que tiene empezado
 completa(Figus, Figurita) :-
     figurita(Figurita, {Rompecabezas, _}),
     esRompecabezas(Rompecabezas),
     member(PiezaQueTiene, Figus),
     figurita(PiezaQueTiene, {Rompecabezas, _}).
 
+% Caso de que sea la última que le falte del album
 completa(Figus, Figurita) :-
     findall(CadaFiguAlbum, figurita(CadaFiguAlbum,_), TodasFigusAlbum),
     length(TodasFigusAlbum, CantFigusAlbum),
     length(Figus, CantFigusQueTiene),
     CantFigusQueTiene is CantFigusAlbum-1.
 % =========== Es una amenaza (Mateo) ===========
+/*
+esUnaAmenaza(Persona):-
+    findall([OtraPersona, Recibe, Entrega], verificarCanje(Persona, OtraPersona, Recibe, Entrega), ListaCanjes),
+    ListaCanjes \= [],
+    member([OtraPersona, _, _], ListaCanjes),
+    haceNegocio(Persona, OtraPersona),
+    salioGanando(Persona, ListaCanjes).
 
+salioGanando(Persona, ListaCanjes):-
+    forall(
+        member([_, Recibe, Entrega], ListaCanjes),
+        (nivelDeInteresTotal(Persona, Recibe, InteresRecibe), 
+        nivelDeInteresTotal(Persona, Entrega, InteresEntrega),
+        InteresRecibe > InteresEntrega)
+    ).
+*/
 % =========== Canjes válidos (Sheila y ¿Maxi?) ===========
+tipoDeColeccionista(andy, []).
+tipoDeColeccionista(flor, [descartador]).
+tipoDeColeccionista(bobby, [cazafortunas]).
+tipoDeColeccionista(pablito, [descartador]). 
+tipoDeColeccionista(toto, [urgido, clasico]).
+tipoDeColeccionista(lala, [clasico]). 
+
 posiblesCanjesValidos(Persona1, Persona2, EntregaDel2, EntregaDel1):-
     condicionesGeneralesCanje(Persona1, EntregaDel1), 
-    detectarEstiloColeccionista(Persona2, EntregaDel1, EntregaDel2).
+    tipoDeColeccionista(Persona2, ListaColeccionista),
+    member(TipoColeccionistaIndv, ListaColeccionista),
+    detectarEstiloColeccionista(TipoColeccionistaIndv, Persona2, EntregaDel1, EntregaDel2).
 
 
 condicionesGeneralesCanje(Persona1, EntregaDel1):- %las condiciones generales incluyen: que el canje es valio y qye la Persona1 tenga una carta repetida
     %esValidoElCanje(Persona1, Persona2, EntregaDel2, EntregaDel1),
     member(FiguritaIndv, EntregaDel1), 
     repetida(Persona1, FiguritaIndv). 
-    
+
 %clasico
-detectarEstiloColeccionista(Persona2, EntregaDel1, _):-
+detectarEstiloColeccionista(clasico, Persona2, EntregaDel1,_):-
     forall(member(Figurita, EntregaDel1), not((tiene(Persona2, Lista), member(Figurita, Lista)))). %La persona2 no tiene ninguna figurita que la Persona1 le entrega
 
 %descartador
-detectarEstiloColeccionista(Persona2, _ , EntregaDel2):-
+detectarEstiloColeccionista(descartador, Persona2, _, EntregaDel2):-
     forall(member(Figurita2, EntregaDel2), repetida(Persona2, Figurita2)).%la Persona2 solo entrega figuritas repetidas
 
-%cazafortunas  
-detectarEstiloColeccionista(_, EntregaDel1,_ ):- %alguna figurita de lo que entregaEl1 es valiosa
+%cazafortunas
+detectarEstiloColeccionista(cazafortunas,_, EntregaDel1,_ ):- %alguna figurita de lo que entregaEl1 es valiosa
     member(Figurita, EntregaDel1),
     esValiosa(Figurita).                    %aca ya tiene al menos una figuritaValiosa 
 
 %urgido
-%detectarEstiloColeccionista(Persona2, EntregaDel1, _):-
-%    member(Figurita, EntregaDel1),
-%   necesitaConUrgencia(Figurita, Persona2)
+detectarEstiloColeccionista(urgido ,Persona2, EntregaDel1, _):-
+    member(Figurita, EntregaDel1),
+    necesitaConUrgencia(Persona2,Figurita).
 
 
 % 11 depende de 9 y 10, 12 depende de 8

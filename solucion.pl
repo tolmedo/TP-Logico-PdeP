@@ -197,46 +197,33 @@ verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona2, Persona1,
 % =========== Es una amenaza (Mateo) ===========
 
 % =========== Canjes válidos (Sheila y ¿Maxi?) ===========
-
-posiblesCanjesValidos(Persona1, Persona2, EntregaEl2, EntregaEl1):-
-    esValidoElCanje(Persona1, Persona2, EntregaEl2, EntregaEl1)
-    member(FiguritaIndv, EntregaEl1),
-    repetida(Persona1, FiguritaIndv),   %ya tiene al menos una repetida 
-    forall(member(CualquierFiguRecibidaDe1, EntregaEl2), clasico(Persona2, CualquierFiguRecibidaDe1)). % Si esa figuritaRepetida no la tiene, entonces la recibe
-
-%Clasico
-clasico(Persona, FiguritaNueva):-
-    not((tiene(Persona, Lista), member(FiguritaNueva, Lista))),
+posiblesCanjesValidos(Persona1, Persona2, EntregaDel2, EntregaDel1):-
+    condicionesGeneralesCanje(Persona1, EntregaDel1), 
+    detectarEstiloColeccionista(Persona2, EntregaDel1, EntregaDel2).
 
 
-%------------------------------------------------
-posiblesCanjesValidos(Persona1, Persona2, EntregaEl2, EntregaEl1):-
-    esValidoElCanje(Persona1, Persona2, EntregaEl2, EntregaEl1)
-    member(FiguritaIndv, EntregaEl1),
-    repetida(Persona1, FiguritaIndv), %confirmo que la Persona1 al menos tiene una repetida
-    descartador(Persona2, EntregaEl2). %la Persona2 solo entrega figuritas repetidas
-
-%Descartador
-descartador(Persona2, EntregaEl2):-
-    forall(member(Figurita2, EntregaEl2), repetida(Persona2, Figurita2)). % forall porque solo entrega repetidas, osea que todas las que entrega deben ser repetidas
-
-%------------------------------------------------
-posiblesCanjesValidos(Persona1, Persona2, EntregaEl2, EntregaEl1):-
-    esValidoElCanje(Persona1, Persona2, EntregaEl2, EntregaEl1)
-    member(FiguritaIndv, EntregaEl1),
-    repetida(Persona1, FiguritaIndv), %ya tiene al menos una repetida 
-    cazafortunas(EntregaEl1).   
+condicionesGeneralesCanje(Persona1, EntregaDel1):- %las condiciones generales incluyen: que el canje es valio y qye la Persona1 tenga una carta repetida
+    %esValidoElCanje(Persona1, Persona2, EntregaDel2, EntregaDel1),
+    member(FiguritaIndv, EntregaDel1), 
+    repetida(Persona1, FiguritaIndv). 
     
-cazafortunas(FiguritasEntregadas):-
-    member(Figurita, FiguritasEntregadas),
+%clasico
+detectarEstiloColeccionista(Persona2, EntregaDel1, _):-
+    forall(member(Figurita, EntregaDel1), not((tiene(Persona2, Lista), member(Figurita, Lista)))). %La persona2 no tiene ninguna figurita que la Persona1 le entrega
+
+%descartador
+detectarEstiloColeccionista(Persona2, _ , EntregaDel2):-
+    forall(member(Figurita2, EntregaDel2), repetida(Persona2, Figurita2)).%la Persona2 solo entrega figuritas repetidas
+
+%cazafortunas  
+detectarEstiloColeccionista(_, EntregaDel1,_ ):- %alguna figurita de lo que entregaEl1 es valiosa
+    member(Figurita, EntregaDel1),
     esValiosa(Figurita).                    %aca ya tiene al menos una figuritaValiosa 
 
-%------------------------------------------------
-posiblesCanjesValidos(Persona1, Persona2, EntregaEl2, EntregaEl1):-
-    esValidoElCanje(Persona1, Persona2, EntregaEl2, EntregaEl1)
-    member(FiguritaIndv, EntregaEl1),
-    repetida(Persona1, FiguritaIndv), %ya tiene al menos una repetida 
-    urgido()
+%urgido
+%detectarEstiloColeccionista(Persona2, EntregaDel1, _):-
+%    member(Figurita, EntregaDel1),
+%   necesitaConUrgencia(Figurita, Persona2)
 
 
 % 11 depende de 9 y 10, 12 depende de 8

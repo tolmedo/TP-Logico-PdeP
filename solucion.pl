@@ -192,8 +192,25 @@ haceNegocio(Persona1, Persona2):-
 verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona1, Persona2, Recibe1, Recibe2).
 verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona2, Persona1, Recibe2, Recibe1).
 
-% =========== Necesita con urgencia (Maxi) ===========    
+% =========== Necesita con urgencia (Maxi) ===========      
 
+necesitaConUrgencia(Persona, Figurita) :-
+    figurita(Figurita, _ ), %no estoy seguro de que sea obligatorio
+    tiene(Persona, Figus),
+    not(member(Figurita,Figus)), %forall(member(FiguritaQueTiene,Figus), FiguritaQueTiene \= Figurita),
+    completa(Figus, Figurita).
+
+completa(Figus, Figurita) :-
+    figurita(Figurita, {Rompecabezas, _}),
+    esRompecabezas(Rompecabezas),
+    member(PiezaQueTiene, Figus),
+    figurita(PiezaQueTiene, {Rompecabezas, _}).
+
+completa(Figus, Figurita) :-
+    findall(CadaFiguAlbum, figurita(CadaFiguAlbum,_), TodasFigusAlbum),
+    length(TodasFigusAlbum, CantFigusAlbum),
+    length(Figus, CantFigusQueTiene),
+    CantFigusQueTiene is CantFigusAlbum-1.
 % =========== Es una amenaza (Mateo) ===========
 
 % =========== Canjes válidos (Sheila y ¿Maxi?) ===========

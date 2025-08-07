@@ -16,8 +16,8 @@ figurita(9, {basica, [littleTwinStars]}). % Nivel = 2
 % =========== Generador de rompecabezas ===========
 
 esRompecabezas(rompecabezas1).
-esRompecabezas(rompecabezas2). % Por las dudas
-esRompecabezas(rompecabezas3). % Por las dudas
+esRompecabezas(rompecabezas2). % Demostración de como agregar rompecabezas
+esRompecabezas(rompecabezas3). % Demostración de como agregar rompecabezas
 
 % =========== Figuritas que actualmente tiene cada persona: tiene(Persona, Figus). ===========
 
@@ -28,11 +28,7 @@ tiene(pablito, [1,2,6]).
 tiene(toto, [1,6]).     
 tiene(lala, [1,3,5,7]). 
 
-% Juanchi no tiene ninguna figurita
-% La figurita 9 no la tiene nadie
-
 cantidadColeccionistas(7).
-% Para el predicado: mitadPersonas(Figurita):-
 
 % =========== Paquetes abiertos: paquete(Persona, N°Paquete, [Figuritas]). ===========
 
@@ -53,7 +49,11 @@ canje(flor, bobby, [2], [1,4,6]).
 canje(flor, bobby, [3], [5]).
 canje(pablito, lala, [1], [5]).
 canje(pablito, toto, [2], [6]).
-canje(flor, pablito, [6], [2]). 
+canje(flor, pablito, [6], [2]).
+
+% caso de prueba punto 11 (ademas ponerle porcentaje al primer canje y borrarle el 2 a andy)
+% canje(andy, pablito, [1], [8]). % NO es una amenaza
+% canje(andy, flor, [2], [5]). % Es una amenaza
 
 % =========== Popularidad de los personajes: popularidad(Personaje, Popularidad). ===========
 
@@ -167,12 +167,11 @@ plusRara(Figuritas, 20) :-
     esRara(F).
 plusRara(_,0).
 
-% =========== Análisis elemental (Tomás) ===========
+% =========== Análisis elemental ===========
 
 esValidoElCanje(Persona1, Persona2, Recibe1, Recibe2):-
-    canje(Persona1, Persona2, Recibe1, Recibe2),
     validarFiguritas(Persona1, Recibe2),
-    validarFiguritas(Persona2, Recibe2). %Recibe1 ? 
+    validarFiguritas(Persona2, Recibe1). 
     
 validarFiguritas(Persona, Figus):-
     tiene(Persona, FigusQueTiene),
@@ -181,10 +180,10 @@ validarFiguritas(Persona, Figus):-
 esValidoElPaquete(Figus):-
     forall(member(FiguritaABuscar, Figus), figurita(FiguritaABuscar, _)).
 
-% =========== Hace negocio (Verificamos que la Persona1 haga negocio con la Persona2) (Thiago) ===========
+% =========== Hace negocio (Verificamos que la Persona1 haga negocio con la Persona2) ===========
 
-haceNegocio(Persona1, Persona2):-
-    verificarCanje(Persona1, Persona2, Recibe, Entrega),
+haceNegocio(Persona, OtraPersona, Recibe, Entrega):-
+    verificarCanje(Persona, OtraPersona, Recibe, Entrega),
     member(R, Recibe), 
     esValiosa(R),
     forall(member(E, Entrega), not(esValiosa(E))).
@@ -192,45 +191,53 @@ haceNegocio(Persona1, Persona2):-
 verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona1, Persona2, Recibe1, Recibe2).
 verificarCanje(Persona1, Persona2, Recibe1, Recibe2):- canje(Persona2, Persona1, Recibe2, Recibe1).
 
-% =========== Necesita con urgencia (Maxi) ===========      
+% =========== Necesita con urgencia ===========      
 
 necesitaConUrgencia(Persona, Figurita) :-
-    figurita(Figurita, _ ), %no estoy seguro de que sea obligatorio
-    tiene(Persona, Figus),
-    not(member(Figurita,Figus)), %forall(member(FiguritaQueTiene,Figus), FiguritaQueTiene \= Figurita),
-    completa(Figus, Figurita).
+    figurita(Figurita, _ ),
+    tiene(Persona, FigusQueTiene),
+    not(member(Figurita,FigusQueTiene)),
+    completa(FigusQueTiene, Figurita).
 
 % Caso de que sea una pieza del rompecabezas que tiene empezado
-completa(Figus, Figurita) :-
+completa(FigusQueTiene, Figurita) :-
     figurita(Figurita, {Rompecabezas, _}),
     esRompecabezas(Rompecabezas),
-    member(PiezaQueTiene, Figus),
+    member(PiezaQueTiene, FigusQueTiene),
     figurita(PiezaQueTiene, {Rompecabezas, _}).
 
 % Caso de que sea la última que le falte del album
-completa(Figus, Figurita) :-
+completa(FigusQueTiene, _) :-
     findall(CadaFiguAlbum, figurita(CadaFiguAlbum,_), TodasFigusAlbum),
     length(TodasFigusAlbum, CantFigusAlbum),
-    length(Figus, CantFigusQueTiene),
+    length(FigusQueTiene, CantFigusQueTiene),
     CantFigusQueTiene is CantFigusAlbum-1.
-% =========== Es una amenaza (Mateo) ===========
-/*
+
+% =========== Es una amenaza ===========
+
 esUnaAmenaza(Persona):-
+    verificarCanje(Persona, _, _, _),
     findall([OtraPersona, Recibe, Entrega], verificarCanje(Persona, OtraPersona, Recibe, Entrega), ListaCanjes),
     ListaCanjes \= [],
-    member([OtraPersona, _, _], ListaCanjes),
-    haceNegocio(Persona, OtraPersona),
-    salioGanando(Persona, ListaCanjes).
+    member([OtraPersona, Recibe, Entrega], ListaCanjes),
+    haceNegocio(Persona, OtraPersona, Recibe, Entrega),
+    forall(member([OtraP, RecibeP, RecibeOtraP], ListaCanjes), salioGanando(Persona, OtraP, RecibeP, RecibeOtraP)).
 
-salioGanando(Persona, ListaCanjes):-
-    forall(
-        member([_, Recibe, Entrega], ListaCanjes),
-        (nivelDeInteresTotal(Persona, Recibe, InteresRecibe), 
-        nivelDeInteresTotal(Persona, Entrega, InteresEntrega),
-        InteresRecibe > InteresEntrega)
-    ).
+salioGanando(Persona, OtraPersona, RecibePersona, RecibeOtraPersona):-
+    nivelDeInteresTotal(Persona, RecibePersona, InteresDePersona), 
+    nivelDeInteresTotal(OtraPersona, RecibeOtraPersona, InteresDelOtro),
+    InteresDePersona > InteresDelOtro.
+
+/* 
+%Versión con otra alternativa, el interés es solo desde el punto de vista de la persona que mandamos.
+salioGanando(Persona, OtraPersona, RecibePersona, RecibeOtraPersona):-
+    nivelDeInteresTotal(Persona, Recibe, InteresR), 
+    nivelDeInteresTotal(Persona, Entrega, InteresE),
+    InteresR > InteresE.
 */
-% =========== Canjes válidos (Sheila y ¿Maxi?) ===========
+
+% =========== Canjes válidos ===========
+
 tipoDeColeccionista(andy, []).
 tipoDeColeccionista(flor, [descartador]).
 tipoDeColeccionista(bobby, [cazafortunas]).
@@ -239,34 +246,27 @@ tipoDeColeccionista(toto, [urgido, clasico]).
 tipoDeColeccionista(lala, [clasico]). 
 
 posiblesCanjesValidos(Persona1, Persona2, EntregaDel2, EntregaDel1):-
-    condicionesGeneralesCanje(Persona1, EntregaDel1), 
+    esValidoElCanje(Persona1, Persona2, EntregaDel2, EntregaDel1),
+    member(FiguritaIndv, EntregaDel1), 
+    repetida(Persona1, FiguritaIndv),
     tipoDeColeccionista(Persona2, ListaColeccionista),
     member(TipoColeccionistaIndv, ListaColeccionista),
     detectarEstiloColeccionista(TipoColeccionistaIndv, Persona2, EntregaDel1, EntregaDel2).
 
-
-condicionesGeneralesCanje(Persona1, EntregaDel1):- %las condiciones generales incluyen: que el canje es valio y qye la Persona1 tenga una carta repetida
-    %esValidoElCanje(Persona1, Persona2, EntregaDel2, EntregaDel1),
-    member(FiguritaIndv, EntregaDel1), 
-    repetida(Persona1, FiguritaIndv). 
-
-%clasico
+% ------ CLASICO: La persona2 no tiene ninguna figurita que la Persona1 le entrega ------
 detectarEstiloColeccionista(clasico, Persona2, EntregaDel1,_):-
-    forall(member(Figurita, EntregaDel1), not((tiene(Persona2, Lista), member(Figurita, Lista)))). %La persona2 no tiene ninguna figurita que la Persona1 le entrega
+    forall(member(Figurita, EntregaDel1), not((tiene(Persona2, Lista), member(Figurita, Lista)))). 
 
-%descartador
+% ------DESCARTADOR: la Persona2 solo entrega figuritas repetidas ------
 detectarEstiloColeccionista(descartador, Persona2, _, EntregaDel2):-
-    forall(member(Figurita2, EntregaDel2), repetida(Persona2, Figurita2)).%la Persona2 solo entrega figuritas repetidas
+    forall(member(Figurita2, EntregaDel2), repetida(Persona2, Figurita2)). 
 
-%cazafortunas
-detectarEstiloColeccionista(cazafortunas,_, EntregaDel1,_ ):- %alguna figurita de lo que entregaEl1 es valiosa
+% ------ CAZAFORTUNAS: alguna figurita de lo que entregaEl1 es valiosa ------
+detectarEstiloColeccionista(cazafortunas,_, EntregaDel1,_ ):-
     member(Figurita, EntregaDel1),
-    esValiosa(Figurita).                    %aca ya tiene al menos una figuritaValiosa 
+    esValiosa(Figurita).                    
 
-%urgido
+% ------ URGIDO: alguna figurita de lo que entregaEl1 la necesita con urgencia ------
 detectarEstiloColeccionista(urgido ,Persona2, EntregaDel1, _):-
     member(Figurita, EntregaDel1),
     necesitaConUrgencia(Persona2,Figurita).
-
-
-% 11 depende de 9 y 10, 12 depende de 8

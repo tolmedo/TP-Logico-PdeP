@@ -79,7 +79,7 @@ obtuvoFigurita(Persona, Figurita):-
     paquete(Persona, _, FigusPaquete),
     member(Figurita, FigusPaquete).
 
-obtuvoFigurita(Persona, Figurita):- canje(Persona, _, [Figurita], _).
+obtuvoFigurita(Persona, Figurita):- canje(Persona, _, [Figurita], _). %Agregar member
 obtuvoFigurita(Persona, Figurita):- canje(_, Persona, _ , [Figurita]).
 
 vecesObtenidas(Persona, Figurita, Veces):-
@@ -165,7 +165,7 @@ interesParcial(Persona, Figurita, Interes) :-
 plusRara(Figuritas, 20) :-
     member(F, Figuritas),
     esRara(F).
-plusRara(_,0).
+plusRara(_,0). %Se Podría agregar para que verifique que ninguna sea rara. (cut en el de arriba)
 
 % =========== Análisis elemental ===========
 
@@ -175,7 +175,7 @@ esValidoElCanje(Persona1, Persona2, Recibe1, Recibe2):-
     
 validarFiguritas(Persona, Figus):-
     tiene(Persona, FigusQueTiene),
-    forall(member(FiguritaABuscar, Figus), member(FiguritaABuscar, FigusQueTiene)).
+    forall(member(FiguritaABuscar, Figus), member(FiguritaABuscar, FigusQueTiene)). %También verificar si las figuritas existen. (No solo que las tenga)
 
 esValidoElPaquete(Figus):-
     forall(member(FiguritaABuscar, Figus), figurita(FiguritaABuscar, _)).
@@ -204,7 +204,7 @@ completa(FigusQueTiene, Figurita) :-
     figurita(Figurita, {Rompecabezas, _}),
     esRompecabezas(Rompecabezas),
     member(PiezaQueTiene, FigusQueTiene),
-    figurita(PiezaQueTiene, {Rompecabezas, _}).
+    figurita(PiezaQueTiene, {Rompecabezas, _}). 
 
 % Caso de que sea la última que le falte del album
 completa(FigusQueTiene, _) :-
@@ -214,8 +214,8 @@ completa(FigusQueTiene, _) :-
     CantFigusQueTiene is CantFigusAlbum-1.
 
 % =========== Es una amenaza ===========
-
-esUnaAmenaza(Persona):-
+% No es en base a la histórica, sino que le mandamos la lista de canjes nosotros
+esUnaAmenaza(Persona):- %Podríamos sacar el findall que le sigue un forall. Es más fácil que evalúe directamente
     verificarCanje(Persona, _, _, _),
     findall([OtraPersona, Recibe, Entrega], verificarCanje(Persona, OtraPersona, Recibe, Entrega), ListaCanjes),
     ListaCanjes \= [],
@@ -245,6 +245,7 @@ tipoDeColeccionista(pablito, [descartador]).
 tipoDeColeccionista(toto, [urgido, clasico]).
 tipoDeColeccionista(lala, [clasico]). 
 
+% Falta que las figuritas sean inversibles (Considerar recursividad).
 posiblesCanjesValidos(Persona1, Persona2, EntregaDel2, EntregaDel1):-
     esValidoElCanje(Persona1, Persona2, EntregaDel2, EntregaDel1),
     member(FiguritaIndv, EntregaDel1), 
@@ -270,3 +271,8 @@ detectarEstiloColeccionista(cazafortunas,_, EntregaDel1,_ ):-
 detectarEstiloColeccionista(urgido ,Persona2, EntregaDel1, _):-
     member(Figurita, EntregaDel1),
     necesitaConUrgencia(Persona2,Figurita).
+
+
+/*
+Tenemos un enfoque demasiado procedural, intentar aprovechar más las herramientas del paradigma lógico.
+*/

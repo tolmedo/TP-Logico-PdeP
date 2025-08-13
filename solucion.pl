@@ -247,6 +247,7 @@ esUnaAmenaza(Persona1, Canjes):-
     haceNegocio(Persona1, Persona2, Entrega1, Entrega2),
     forall(member((OtraPersona, EntregaP1, EntregaOtraPersona), Canjes), salioGanando(Persona1, OtraPersona, EntregaP1, EntregaOtraPersona)).
 
+/*
 salioGanando(Persona, OtraPersona, Entrega, Recibe):- % No es posible inversibilidad en cuanto a "Entrega, Recibe" por las infinitas combinaciones
     member(F,Entrega),
     obtuvoFigurita(Persona, F),
@@ -256,6 +257,63 @@ salioGanando(Persona, OtraPersona, Entrega, Recibe):- % No es posible inversibil
     nivelDeInteresTotal(Persona, Recibe, InteresDePersona), 
     nivelDeInteresTotal(OtraPersona, Entrega, InteresDelOtro),
     InteresDePersona > InteresDelOtro.
+*/
+
+salioGanando(Persona, OtraPersona, Entrega, Recibe) :-
+    obtuvoFigurita(Persona, _),
+    obtuvoFigurita(OtraPersona, _),
+    Persona \= OtraPersona,
+
+    findall(F, obtuvoFigurita(Persona, F), FigusP1),   %Se buscan todas las figuritas que tiene la persona1
+    findall(F, obtuvoFigurita(OtraPersona, F), FigusP2), %Sebuscan todas las figuritas que tiene la persona2
+
+    subconjuntoNoVacio(FigusP1, Entrega), %Aca, se mandan las listas de todas las figuritas de la P1, por ejemplo [2,4,5] y en entrega se recibe lo que se hace en (*)
+    subconjuntoNoVacio(FigusP2, Recibe),
+
+    %esValidoElCanje(Persona, OtraPersona, Entrega, Recibe),
+    nivelDeInteresTotal(Persona, Recibe, InteresDePersona),     %(**)
+    nivelDeInteresTotal(OtraPersona, Entrega, InteresDelOtro),
+    InteresDePersona > InteresDelOtro.
+
+subconjuntoNoVacio(Lista, Sub) :-   %(*) aca llega la lista de figus de la persona y se devuelve una a una, una lista con las cartas que puede canjear una persona, siguiendo el ejemplo, en cada consulta devuelve [2], luego a la siguiente [4], luego [5], luego [2,4], luego [2,5] yasi. Luego en (**) se analiza el nivelDeInteresTotal para cada uno de estos envios.
+    eligeFiguritas(Lista, Sub),
+    Sub \= [].   % filtro la lista vacía
+
+eligeFiguritas([], []). %hace la recursividad hasta que las listas sean vacias
+eligeFiguritas([F|Resto], [F|Elegidas]) :- eligeFiguritas(Resto, Elegidas). 
+eligeFiguritas([_|Resto], Elegidas) :- eligeFiguritas(Resto, Elegidas).
+
+/*
+  eligeFiguritas(Lista, Elegidas):
+
+  - La idea era que genere todos los posibles subconjuntos de la lista.
+  - Para cada elemento de la lista original (F), pueden pasar dos cosas: 
+      -Puede incluit el elemento en la lista de salida, en [F|Elegidas]
+      -Puede no incluirlo: en [_|Resto]
+
+  Por ejemplo con [1,2]:
+
+      F = 1 por ser el primero de la lista y ahi puede pasar que:
+         que lo incluya [1|...] y recurre al resto [2]
+         que lo excluya, osea, resto [2] sin incluir 1
+
+      F = 2
+         - si lo incluye forma:  [1,2] o [2]
+         - si no lo incluye forma:  [1] o []
+
+  forma: 
+[1,2], [1], [2]  (la lista vacía se descarta)
+
+Igualmente esta muy feo, porque termino quedando extraño. El objetivo de esto era decir que capaz no era conveniente hacer este inversible porque hay opciones de canje como estas: 
+
+Flor recibe= [3,7,1,5]  ---> Flor ya tiene la 7 y la 5 (es un canje valido porque podria canjear repetidas), pero tambien recibe la 3 y la 1 y juntas suman un interes de 43
+Lala recibe = [5,5,7,4,2] ---->  Lala ya tiene la 7 y la 5,  pero no tiene la 4 y la 2 y juntas suman un interes de 65
+Entonces, lala sale ganando porque recibe algo de interes mayor, 65 > 43 y esto sucede incluso si se intercambian figuritas que cada una ya tiene. Si es asi, deberiamos tener en cuenta este tipo de canjes para todas las personas y habria muchisimas combninaciones 
+es lo que pasa al poner:  salioGanando(lala, flor, RecibeFlor, RecibeLala)
+no terminas de hacer consultas en la terminal 
+
+*/
+
 
 % =========== Canjes válidos ===========
 
